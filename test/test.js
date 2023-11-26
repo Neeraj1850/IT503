@@ -21,16 +21,38 @@ describe('Test cases',() => {
 
   })
 
+  it('assigns token weightage to tiers', async () => {
+    await tokenInstance.assignTierDetails(0, ethers.parseEther('100'))
+    await tokenInstance.assignTierDetails(1, ethers.parseEther('200'))
+    await tokenInstance.assignTierDetails(2, ethers.parseEther('300'))
+
+    expect((await tokenInstance.tierDetails(0)).tokenWeightage).to.equal(ethers.parseEther('100'))
+    expect((await tokenInstance.tierDetails(1)).tokenWeightage).to.equal(ethers.parseEther('200'))
+    expect((await tokenInstance.tierDetails(2)).tokenWeightage).to.equal(ethers.parseEther('300'))
+
+  })
+
+  it('assigns tiers to employees', async () => {
+    await tokenInstance.assignTier(voter1.address, 0)
+    await tokenInstance.assignTier(voter2.address, 1)
+    await tokenInstance.assignTier(voter3.address, 2)
+    await tokenInstance.assignTier(voter4.address, 2)
+
+    expect(await tokenInstance.employeeTier(voter1.address)).to.equal(0)
+    expect(await tokenInstance.employeeTier(voter2.address)).to.equal(1)
+    expect(await tokenInstance.employeeTier(voter3.address)).to.equal(2)
+    expect(await tokenInstance.employeeTier(voter4.address)).to.equal(2)
+  })
+
   it('mints tokens to voters', async () => {
     await tokenInstance.batchMint(
-      [voter1.address, voter2.address, voter3.address, voter4.address],
-      [ethers.parseEther("100"), ethers.parseEther("100"), ethers.parseEther("100"), ethers.parseEther("100")]
+      [voter1.address, voter2.address, voter3.address, voter4.address]
     )
 
     expect(await tokenInstance.balanceOf(voter1.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.balanceOf(voter2.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.balanceOf(voter3.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.balanceOf(voter4.address)).to.equal(ethers.parseEther('100'))
+    expect(await tokenInstance.balanceOf(voter2.address)).to.equal(ethers.parseEther('200'))
+    expect(await tokenInstance.balanceOf(voter3.address)).to.equal(ethers.parseEther('300'))
+    expect(await tokenInstance.balanceOf(voter4.address)).to.equal(ethers.parseEther('300'))
     
   })
 
@@ -41,9 +63,9 @@ describe('Test cases',() => {
     await tokenInstance.connect(voter4).delegate(voter4.address)
 
     expect(await tokenInstance.getVotes(voter1.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.getVotes(voter2.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.getVotes(voter3.address)).to.equal(ethers.parseEther('100'))
-    expect(await tokenInstance.getVotes(voter4.address)).to.equal(ethers.parseEther('100'))
+    expect(await tokenInstance.getVotes(voter2.address)).to.equal(ethers.parseEther('200'))
+    expect(await tokenInstance.getVotes(voter3.address)).to.equal(ethers.parseEther('300'))
+    expect(await tokenInstance.getVotes(voter4.address)).to.equal(ethers.parseEther('300'))
 
   })
 

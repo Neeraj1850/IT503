@@ -10,7 +10,22 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 contract MyToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
     constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) ERC20Permit("MyToken") Ownable(msg.sender){}
 
+    mapping(address => Tiers) public employeeTier;
+    mapping(address => bool) public isEmployee;
+    mapping(uint256 => TierDetails) public tierDetails;
+
     // The following functions are overrides required by Solidity.
+
+    enum Tiers {
+        tier0,
+        tier1,
+        tier2
+    }
+
+    struct TierDetails {
+        Tiers  tier;
+        uint256 tokenWeightage;
+    }
 
     function _update(address from, address to, uint256 value)
         internal
@@ -23,11 +38,27 @@ contract MyToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
         _mint(_to,_value);
     }
 
-    function batchMint(address[] memory _addresses, uint256[] memory _value) external onlyOwner {
-        require(_addresses.length == _value.length, "Array size should be equal");
+    function batchMint(address[] memory _addresses) external onlyOwner {
         for(uint i = 0; i < _addresses.length; i++) {
-            _mint(_addresses[i], _value[i]);
+            require(isEmployee[_addresses[i]], "Non employee address");
+            uint256 _addressTier = uint256(employeeTier[_addresses[i]]);
+            uint256 _tokenWeightage = tierDetails[_addressTier].tokenWeightage;
+
+            _mint(_addresses[i], _tokenWeightage);
         }
+    }
+
+    function assignTier(address _address, Tiers _tier) external onlyOwner {
+        require(_address != address(0), "Null address");
+        employeeTier[_address] = _tier;
+        isEmployee[_address] = true;
+    }
+
+    function assignTierDetails(Tiers _tier, uint256 _tokenWeightage) external onlyOwner {
+        require(_tokenWeightage > 0, "Token weightage must be positive");
+        uint256 tierIndex = uint256(_tier);
+        tierDetails[tierIndex].tier = _tier;
+        tierDetails[tierIndex].tokenWeightage = _tokenWeightage; 
     }
 
     function burn(uint256 _value) external {
