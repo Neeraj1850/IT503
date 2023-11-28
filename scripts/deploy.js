@@ -14,7 +14,7 @@ const {
 
 async function deployment() {
 
-  [deployer] = await hre.ethers.getSigners()
+  [deployer,,,,,user] = await hre.ethers.getSigners()
 
   const token = await hre.ethers.getContractFactory("MyToken")
   const tokenInstance = await token.deploy("Governance Token", "GT")
@@ -54,7 +54,7 @@ async function deployment() {
   await timelockInstance.revokeRole(adminRoleBytes, deployer.address)
 
   const treasury = await hre.ethers.getContractFactory('Treasury')
-  const treasuryInstance = await treasury.deploy(deployer.address)
+  const treasuryInstance = await treasury.deploy(user.address, {value: ethers.parseEther("1")}) 
   const treasuryAddress = await treasuryInstance.getAddress()
   console.log(`Treasury contract is deployed at ${treasuryAddress}`)
 
@@ -64,7 +64,8 @@ async function deployment() {
     tokenInstance,
     governanceInstance,
     timelockInstance,
-    treasuryInstance
+    treasuryInstance,
+    user
   };
 
 

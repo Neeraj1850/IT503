@@ -7,7 +7,7 @@ const {mine} = require('@nomicfoundation/hardhat-network-helpers')
 describe('Test cases',() => {
 
   let tokenInstance, governanceInstance, timelockInstance, treasuryInstance
-  let admin, voter1, voter2, voter3, voter4
+  let admin, voter1, voter2, voter3, voter4, user
   let id
   
   before(async () => {
@@ -15,7 +15,8 @@ describe('Test cases',() => {
       tokenInstance,
       governanceInstance,
       timelockInstance,
-      treasuryInstance
+      treasuryInstance,
+      user
     } = await deployment());
     [admin, voter1, voter2, voter3, voter4] = await ethers.getSigners()
 
@@ -92,13 +93,6 @@ describe('Test cases',() => {
     const deadline = await governanceInstance.proposalDeadline(id) //proposal end time
     const blocknumber = await ethers.provider.getBlockNumber()
     const quorum = await governanceInstance.quorum(Number(blocknumber)-Number(1)) //number of votes required to execute
-    console.log({
-      state: state,
-      snapshot: snapshot,
-      deadline: deadline,
-      blocknumber: blocknumber,
-      quorum: quorum
-    })
 
   })
 
@@ -112,29 +106,33 @@ describe('Test cases',() => {
 
   it('checks execution', async () => {
     const state0 = await governanceInstance.state(id)
-    console.log(state0)
+    console.log(`Current state of Proposal ${state0}`)
     await mine(10)
+
     const state1 = await governanceInstance.state(id)
-    console.log(state1)
+    console.log(`Current state of Proposal ${state1}`)
+
     const hash = '0x45d617489b5ab66eacf6882678329a52c9ecfa41346734b56fe076532134b821'
     const treasuryAddress = await treasuryInstance.getAddress()
     const encodedFunction = await treasuryInstance.interface.encodeFunctionData("releaseFunds")
-    console.log({
-      treasuryAddress: treasuryAddress,
-      encodedFunction: encodedFunction,
-      hash: hash,
-      admin: admin.address
-    })
+
     await governanceInstance.connect(admin).queue([treasuryAddress],[0],[encodedFunction],hash)
+    
     const state2 = await governanceInstance.state(id)
-    console.log(state2)
+    console.log(`Current state of Proposal ${state2}`)
     await mine(10)
-    await governanceInstance.execute([treasuryAddress],[0],[encodedFunction],hash, {value: ethers.parseEther('10')})
+
+    await governanceInstance.execute([treasuryAddress],[0],[encodedFunction],hash)
     const state3 = await governanceInstance.state(id)
     
-    console.log(state3)
+    console.log(`Current state of Proposal ${state3}`)
 
     // 0:Pending, 1:Active, 2:Canceled, 3:Defeated, 4:Succeeded, 5:Queued, 6:Expired, 7:Executed
+  })
+
+  it('checks whether the treasury credited the balance to user', async() => {
+    const x = await ethers.provider.getBalance(user.address)
+    expect(x).to.equal(ethers.parseEther("10001"))
   })
 
   
