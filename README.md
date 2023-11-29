@@ -35,7 +35,7 @@ This project implements a governance system using smart contracts. It includes a
 
 ### Flow Diagram
 
-![Flow Diagram](https://github.com/Neeraj1850/IT503/blob/master/1.png)
+![Flow Diagram](https://github.com/Neeraj1850/IT503/blob/master/helpers/1.png)
 
 ### Getting Started
 
