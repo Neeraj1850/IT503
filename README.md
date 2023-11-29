@@ -33,6 +33,10 @@ This project implements a governance system using smart contracts. It includes a
   - Contains test cases for token tier assignments, token minting, proposal creation, voting, and execution.
   - Verifies the correct state transitions of proposals and the release of funds from the treasury.
 
+### Flow Diagram
+
+![Flow Diagram](https://github.com/Neeraj1850/IT503/blob/master/1.png)
+
 ### Getting Started
 
 To deploy and test the contracts:
